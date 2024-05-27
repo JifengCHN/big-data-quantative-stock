@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from kafka import KafkaProducer
+from loguru import logger
 import json
 import time
 

@@ -5,11 +5,12 @@ from dotenv import load_dotenv
 import os
 from loguru import logger
 
-load_dotenv()
+
 CONNECTION_STRING = os.environ.get("COSMOS_CONNECTION_STRING")
 
 class Downloader():
     def __init__(self, db_name, collection_name):
+        load_dotenv()
         self.client = MongoClient(CONNECTION_STRING)
         self.db = self.client[db_name]
         self.collection = self.db[collection_name]
