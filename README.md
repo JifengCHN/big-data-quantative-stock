@@ -39,10 +39,27 @@ data = downloader.get_local_data([], ["000001.SZ"], "tick", "20240418", "2024042
 downloader.store_data(data)
 ```
 
-### data_mocker
+### kafka_component
+#### tweet_producer
 ```python
 from data_mocker.mocker import Mocker
+from kafka_component.tweet_producer import MockProducer, TweetListener
 
+topic_name = "stock"
+mocker = Mocker()
+producer = MockProducer()
+listener = TweetListener(mocker, producer, topic_name)
+search_term = "平安银行"
+
+listener.start_processing_tweets(search_term, n=10)
+```
+
+#### tweet_consumer
+```python
+from kafka_component.tweet_consumer import TweetConsumer
+
+consumer = TweetConsumer(topic_name='stock')
+consumer.consume()
 ```
 
 ### data_retriever
