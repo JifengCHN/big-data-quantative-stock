@@ -1,7 +1,20 @@
 # big-data-quantative-stock
 ## 项目架构
+![alt text](imgs/stock_platform_components.png)
 
-## 环境配置方法
+### 秒级行情多因子实时计算流程图
+![alt text](imgs/stock_analysis_process.png)
+
+### 推特实时情感分析架构图
+![alt text](imgs/tick_architecture.png)
+
+逻辑回归与`Spark Streaming`的交互
+![alt text](imgs/lr_pipeline.png)
+
+数据清洗流水线具体如下
+![alt text](imgs/ml_pipeline.png)
+
+## 使用说明
 1. 在`.env`中添加`mongodb`连接的字符串
     ```
     COSMOS_CONNECTION_STRING="mongodb+srv://fernando:Zz12345678@stockanalysis.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
@@ -28,8 +41,8 @@
     kafka-topics --describe --topic stock --bootstrap-server localhost:9092
     ```
 
-## 模块调用说明
-### data_downloader
+## 模块说明
+### 数据下载器 `data_downloader`
 ```python
 from data_downloader.downloader import Downloader
 
@@ -39,14 +52,14 @@ data = downloader.get_local_data([], ["000001.SZ"], "tick", "20240418", "2024042
 downloader.store_data(data)
 ```
 
-### kafka_component
-#### producer
+### Kafka组件 `kafka_component`
+#### 生产者`producer`
 调用方法详见`produce.ipynb`
 
-#### consumer
+#### 消费者`consumer`
 调用方法详见`consume.ipynb`
 
-### mongodb_connector
+### 数据库连接器`mongodb_connector`
 ```python
 from mongodb_connector.connector import MongoDBConnector
 
@@ -58,9 +71,10 @@ result = connector.get_all_data(query=query)
 df = pd.DataFrame(list(result))
 ```
 
-## Tweeter Data Mocker解析
-![alt text](./imgs/image.png)
-下面是通过 tweet API 获得的 json 格式的数据，data_mocker模块将模拟生成此格式数据
+## Twitter Data Mocker解析
+由于Twitter的API接口不是免费的，此项目使用GPT生成数据进行模拟，下面是通过 tweet API 获得的 json 格式的数据：
+![alt text](imgs/tweet_structure.png)
+`data_mocker`模块将模拟生成此格式数据
 ```json
 [
     {
@@ -81,4 +95,5 @@ df = pd.DataFrame(list(result))
 ```
 其中，`edit_history_tweet_ids` 这个字段包含一个推特的历史编辑ID的列表。每当推特被编辑或修改时，系统会生成一个新的ID，并将其记录在这个列表中。这个列表可以帮助追踪某个推特的编辑历史；`matching_rules` 这个字段包含一个匹配规则的列表，这些规则被用来标识和分类推特。每条规则有一个唯一的ID和一个可选的标签（tag）。这些规则可能由用户或系统定义，用于过滤、分类或标记推特数据。
 
-![alt text](image.png)
+## 推特实时消息分析结果
+![alt text](imgs/tweet_analysis.png)
