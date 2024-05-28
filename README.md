@@ -40,35 +40,21 @@ downloader.store_data(data)
 ```
 
 ### kafka_component
-#### tweet_producer
+#### producer
+调用方法详见`produce.ipynb`
+
+#### consumer
+调用方法详见`consume.ipynb`
+
+### mongodb_connector
 ```python
-from data_mocker.mocker import Mocker
-from kafka_component.tweet_producer import MockProducer, TweetListener
+from mongodb_connector.connector import MongoDBConnector
 
-topic_name = "stock"
-mocker = Mocker()
-producer = MockProducer()
-listener = TweetListener(mocker, producer, topic_name)
-search_term = "平安银行"
+connector = MongoDBConnector(db_name="stock_data", collection_name="600036.SH")
 
-listener.start_processing_tweets(search_term, n=10)
-```
-
-#### tweet_consumer
-```python
-from kafka_component.tweet_consumer import TweetConsumer
-
-consumer = TweetConsumer(topic_name='stock')
-consumer.consume()
-```
-
-### data_retriever
-```python
-from data_retriever.retriever import Retriever
-
-retriever = Retriever(db_name="stock_data", collection_name="600036.SH")
+# 查询股票行情
 query = {'stock_code': '600036.SH'}
-result = retriever.get_all_data(query=query)
+result = connector.get_all_data(query=query)
 df = pd.DataFrame(list(result))
 ```
 

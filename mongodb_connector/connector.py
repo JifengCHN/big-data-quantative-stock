@@ -5,7 +5,7 @@ import os
 
 CONNECTION_STRING = os.environ.get("COSMOS_CONNECTION_STRING")
 
-class Retriever():
+class MongoDBConnector():
     def __init__(self, db_name, collection_name):
         load_dotenv()
         self.client = pymongo.MongoClient(CONNECTION_STRING)
