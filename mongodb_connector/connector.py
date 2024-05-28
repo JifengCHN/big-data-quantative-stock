@@ -15,3 +15,6 @@ class MongoDBConnector():
     def get_all_data(self, query):
         data = self.collection.find(query)
         return list(data)
+    
+    def write_row_in_mongo(df):
+        df.write.format("mongo").mode("append").option("uri", CONNECTION_STRING).save()

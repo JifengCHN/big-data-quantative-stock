@@ -18,7 +18,7 @@ class TweetListener:
             data = {
                 'message': tweet_data['data']['text'].replace(',', '')
             }
-            self.producer.send(self.topic_name, value=json.dumps(data).encode('utf-8'))
+            self.producer.send(self.topic_name, value=json.dumps(data, ensure_ascii=False).encode('utf-8'))
 
     def start_processing_tweets(self, search_term, n=5):
         tweets_json = self.mocker.generate_tweets(search_term, n)
