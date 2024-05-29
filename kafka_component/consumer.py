@@ -1,13 +1,11 @@
-from kafka import KafkaConsumer
-import json
 import findspark
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType, ArrayType, DoubleType, LongType
+from pyspark.ml import PipelineModel
 from pyspark.sql.functions import from_json
-import os
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, ArrayType, DoubleType, LongType
 
-COSMOS_CONNECTION_STRING = os.environ.get("COSMOS_CONNECTION_STRING")
+COSMOS_CONNECTION_STRING = "mongodb+srv://fernando:Zz12345678@stockanalysis.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
 
 class TweetConsumer:
     def __init__(self, bootstrap_servers='localhost:9092'):
@@ -43,6 +41,14 @@ class TweetConsumer:
         df = df \
             .withColumn("value", from_json("message", schema))
 
+        # 转换为小写\移除 URLs\移除非字母或非中文字符\清理开始和结束的空格，以及多余的空格\分割字符串为单词数组
+        df = df.withColumn("lower_message", F.lower(F.col("value.message")))
+        df = df.withColumn("no_urls", F.regexp_replace(F.col("lower_message"), "http\\S+|www.\\S+", ""))
+        df = df.withColumn("only_alpha_or_chinese", F.regexp_replace(F.col("no_urls"), "[^a-zA-Z\\s\\u4e00-\\u9fff]", ""))
+        df = df.withColumn("trimmed", F.trim(F.regexp_replace(F.col("only_alpha_or_chinese"), "\\s+", " ")))
+        df = df.withColumn("cleaned_data", F.split(F.col("trimmed"), " "))
+        df = df.filter(F.size(F.col("cleaned_data")) > 0)
+
         # 在控制台输出当前的 DataFrame
         df.writeStream \
             .format("console") \
@@ -52,7 +58,7 @@ class TweetConsumer:
             .awaitTermination()
 
         
-    def consume(self, topic_name, start_from_beginning=True):
+    def consume(self, topic_name, path_to_model, start_from_beginning=True):
         df = self.spark \
             .readStream \
             .format("kafka") \
@@ -75,6 +81,21 @@ class TweetConsumer:
         df = df.withColumn("cleaned_data", F.split(F.col("trimmed"), " "))
         df = df.filter(F.size(F.col("cleaned_data")) > 0)
 
+        pipeline_model = PipelineModel.load(path_to_model)
+        prediction = pipeline_model.transform(df)
+        prediction = prediction.select(prediction.message, prediction.prediction)
+        prediction \
+            .writeStream \
+            .format("console") \
+            .outputMode("update") \
+            .option("truncate", False) \
+            .start() \
+            .awaitTermination()
+        
+        query = prediction.writeStream.queryName("tweets") \
+            .start() \
+            .awaitTermination()
+        
 class TickConsumer:
     def __init__(self, bootstrap_servers='localhost:9092'):
         self.bootstrap_servers = bootstrap_servers
