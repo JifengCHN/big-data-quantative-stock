@@ -44,7 +44,7 @@ class TickProducer:
             bootstrap_servers=bootstrap_servers,
             value_serializer=json_serializer  # 使用自定义的JSON序列化函数
         )
-        self.connector = MongoDBConnector(db_name="stock_data", collection_name="all_stocks_ticks")
+        self.connector = MongoDBConnector(db_name="stock_data", collection_name="600036.SH")
     
     def send(self, topic):
         # 创建索引以优化查询（如果尚未创建）
