@@ -1,3 +1,4 @@
+import os
 import findspark
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
@@ -5,7 +6,7 @@ from pyspark.ml import PipelineModel
 from pyspark.sql.functions import from_json
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, ArrayType, DoubleType, LongType
 
-COSMOS_CONNECTION_STRING = "mongodb+srv://fernando:Zz12345678@stockanalysis.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
+COSMOS_CONNECTION_STRING = os.environ.get("COSMOS_CONNECTION_STRING")
 
 class TweetConsumer:
     def __init__(self, bootstrap_servers='localhost:9092'):
